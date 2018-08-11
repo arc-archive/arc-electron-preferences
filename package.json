@@ -4,7 +4,7 @@
   "description": "A package to handle ARC preferences state in both rendered and main process",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_ENV=test ELECTRON_PATH=node_modules/.bin/electron electron-mocha test/*.main.test.js && electron-mocha --renderer test/*.renderer.test.js"
+    "test": "electron-mocha test/*.main.test.js && electron-mocha --renderer test/*.renderer.test.js"
   },
   "author": "Pawel Psztyc",
   "license": "Apache-2.0",
