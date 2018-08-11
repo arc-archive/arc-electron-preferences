@@ -221,7 +221,7 @@ describe('ArcSessionControl class - main process', function() {
           assert.equal(data.size.height, 2);
           done();
         });
-      }, 2);
+      }, 5);
     });
   });
 
@@ -252,7 +252,7 @@ describe('ArcSessionControl class - main process', function() {
           assert.equal(data.position.y, 2);
           done();
         });
-      }, 2);
+      }, 5);
     });
   });
 });
