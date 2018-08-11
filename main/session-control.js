@@ -41,7 +41,39 @@ class ArcSessionControl extends ArcPreferences {
      * @type {Number}
      */
     this.storeDebounce = 500;
+    /**
+     * A reference to a BrowserWindow object that is being tracked.
+     * @type {BrowserWindow}
+     */
+    this.window = undefined;
+    this._movedHandler = this._movedHandler.bind(this);
+    this._resizedHandler = this._resizedHandler.bind(this);
   }
+  /**
+   * Starts tracking a window for move and resize events to call corresponding
+   * save functions.
+   * Note, when the window is distroyed call `untrackWindow` or it will cause
+   * a memory leak.
+   * @param {BrowserWindow} win
+   */
+  trackWindow(win) {
+    this.untrackWindow();
+    this.window = win;
+    win.addListener('move', this._movedHandler);
+    win.addListener('resize', this._resizedHandler);
+  }
+  /**
+   * Untracks events from currently tracked window.
+   */
+  untrackWindow() {
+    if (!this.window) {
+      return;
+    }
+    this.window.removeListener('move', this._movedHandler);
+    this.window.removeListener('resize', this._resizedHandler);
+    this.window = undefined;
+  }
+
   /**
    * Stores current settings with a debouncer.
    */
@@ -161,6 +193,28 @@ class ArcSessionControl extends ArcPreferences {
       return 0;
     }
     return value;
+  }
+  /**
+   * Handler for the BrowserWindow `move` event.
+   * Stores session value for window position.
+   *
+   * @param {Event} e Event emitted by the window.
+   */
+  _movedHandler(e) {
+    const win = e.sender;
+    const pos = win.getPosition();
+    this.updatePosition(pos[0], pos[1]);
+  }
+  /**
+   * Handler for the BrowserWindow `resize` event.
+   * Stores session value for window position.
+   *
+   * @param {Event} e Event emitted by the window.
+   */
+  _resizedHandler(e) {
+    const win = e.sender;
+    const size = win.getSize();
+    this.updateSize(size[0], size[1]);
   }
 }
 exports.ArcSessionControl = ArcSessionControl;
