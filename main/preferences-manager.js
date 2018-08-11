@@ -82,13 +82,13 @@ class PreferencesManager extends ArcPreferences {
    * @return {Object} Default settings object.
    */
   defaultSettings() {
-    return {
+    return Promise.resolve({
       'useVariables': true,
       'useCookieStorage': true,
       'requestDefaultTimeout': 45,
       'autoUpdate': true,
       'telemetry': true
-    };
+    });
   }
 }
 module.exports.PreferencesManager = PreferencesManager;
