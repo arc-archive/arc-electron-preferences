@@ -35,20 +35,20 @@ class ArcPreferencesProxy {
   /**
    * Handler for the `settings-read` custom event. Reads current settings.
    * It set's the `result` property on event's detail object with the
-   * promise from calling `loadSettings()` function.
+   * promise from calling `load()` function.
    *
    * @param {CustomEvent} e Custom event
    */
   _readHandler(e) {
     e.preventDefault();
     e.stopPropagation();
-    e.detail.result = this.loadSettings();
+    e.detail.result = this.load();
   }
   /**
    * Loads application settings from the main thread.
    * @return {Promise}
    */
-  loadSettings() {
+  load() {
     return new Promise((resolve) => {
       const id = (++this.lastRequestId);
       this.promises.push({

@@ -105,7 +105,7 @@ class WorkspaceManager extends ArcPreferences {
    */
   restore() {
     log.info('Restoring workspace data from', this.settingsFile);
-    return this.loadSettings()
+    return this.load()
     .then((data) => {
       log.info('Restored workspace data from', this.settingsFile);
       this.initialized = true;

@@ -33,7 +33,7 @@ class PreferencesManager extends ArcPreferences {
    * response
    */
   _readHandler(event, id) {
-    this.loadSettings()
+    this.load()
     .then((settings) => {
       event.sender.send('app-preferences', settings, id);
     })
@@ -52,7 +52,7 @@ class PreferencesManager extends ArcPreferences {
   _changeHandler(event, name, value) {
     let p;
     if (!this.__settings) {
-      p = this.loadSettings();
+      p = this.load();
     } else {
       p = Promise.resolve();
     }

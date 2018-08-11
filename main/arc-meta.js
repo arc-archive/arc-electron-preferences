@@ -29,7 +29,7 @@ class ArcMeta extends ArcPreferences {
    * @return {Promse} Promise resolved to the application ID.
    */
   getAppId() {
-    return this.loadSettings()
+    return this.load()
     .then((meta) => meta.appId);
   }
   /**
@@ -40,7 +40,7 @@ class ArcMeta extends ArcPreferences {
    * @return {Promse} Promise resolved to the application anonymized ID.
    */
   getAninimizedId() {
-    return this.loadSettings()
+    return this.load()
     .then((meta) => meta.aid);
   }
   /**

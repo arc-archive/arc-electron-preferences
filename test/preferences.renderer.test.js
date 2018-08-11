@@ -139,10 +139,10 @@ describe('ArcPreferences class - renderer process', function() {
     });
   });
 
-  describe('loadSettings()', function() {
+  describe('load()', function() {
     const data = {
       test: true,
-      loadSettings: true
+      load: true
     };
 
     after(() => {
@@ -153,7 +153,7 @@ describe('ArcPreferences class - renderer process', function() {
       const instance = new ArcPreferences({
         file
       });
-      return instance.loadSettings()
+      return instance.load()
       .then((content) => {
         assert.deepEqual(content, {});
       });
@@ -166,7 +166,7 @@ describe('ArcPreferences class - renderer process', function() {
       instance.defaultSettings = function() {
         return Promise.resolve(data);
       };
-      return instance.loadSettings()
+      return instance.load()
       .then((content) => {
         assert.deepEqual(content, data);
       });
@@ -179,7 +179,7 @@ describe('ArcPreferences class - renderer process', function() {
       instance.defaultSettings = function() {
         return Promise.resolve(data);
       };
-      return instance.loadSettings()
+      return instance.load()
       .then(() => fs.readJson(file))
       .then((content) => {
         assert.deepEqual(content, data);
@@ -193,7 +193,7 @@ describe('ArcPreferences class - renderer process', function() {
       instance.defaultSettings = function() {
         return Promise.resolve(data);
       };
-      return instance.loadSettings()
+      return instance.load()
       .then(() => {
         assert.deepEqual(instance.__settings, data);
       });
@@ -207,11 +207,11 @@ describe('ArcPreferences class - renderer process', function() {
         return Promise.resolve(data);
       };
       let settings;
-      return instance.loadSettings()
+      return instance.load()
       .then(() => {
         settings = instance.__settings;
         settings.testValue = true;
-        return instance.loadSettings();
+        return instance.load();
       })
       .then((content) => {
         assert.deepEqual(content, settings);

@@ -19,7 +19,7 @@ describe('ArcMeta class - main process', function() {
     });
 
     it('Creates the settings', (done) => {
-      instance.loadSettings()
+      instance.load()
       .then((meta) => {
         // load settings has `catch` function.
         setTimeout(() => {
@@ -34,12 +34,12 @@ describe('ArcMeta class - main process', function() {
     it('Created data is persistent', (done) => {
       let createdAppId;
       let createdAid;
-      instance.loadSettings()
+      instance.load()
       .then((meta) => {
         createdAppId = meta.appId;
         createdAid = meta.aid;
         const other = new ArcMeta();
-        return other.loadSettings();
+        return other.load();
       })
       .then((meta) => {
         setTimeout(() => {
