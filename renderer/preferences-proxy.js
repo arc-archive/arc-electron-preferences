@@ -24,6 +24,15 @@ class ArcPreferencesProxy {
     ipcRenderer.on('app-preferences', this._mainPrefsHandler);
   }
   /**
+   * Stop observing window and IPC events
+   */
+  unobserve() {
+    window.removeEventListener('settings-read', this._readHandler);
+    window.removeEventListener('settings-changed', this._changeHandler);
+    ipcRenderer.removeListener('app-preference-updated', this._mainChangedHandler);
+    ipcRenderer.removeListener('app-preferences', this._mainPrefsHandler);
+  }
+  /**
    * Handler for the `settings-read` custom event. Reads current settings.
    * It set's the `result` property on event's detail object with the
    * promise from calling `loadSettings()` function.

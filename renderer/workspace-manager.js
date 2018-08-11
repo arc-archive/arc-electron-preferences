@@ -42,11 +42,18 @@ class WorkspaceManager extends ArcPreferences {
     this._changeHandler = this._changeHandler.bind(this);
   }
   /**
-   * Observers window and IPC events which makes this class work.
+   * Observers window custom events
    */
   observe() {
     window.addEventListener('workspace-state-read', this._readHandler);
     window.addEventListener('workspace-state-store', this._changeHandler);
+  }
+  /**
+   * Removed web event listeners from ythe window object
+   */
+  unobserve() {
+    window.removeEventListener('workspace-state-read', this._readHandler);
+    window.removeEventListener('workspace-state-store', this._changeHandler);
   }
   /**
    * Generates the default settings. It is used by the parten class when
