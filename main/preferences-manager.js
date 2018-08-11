@@ -1,4 +1,4 @@
-const {ArcPreferences} = require('../lib/arc-preferences');
+const {ArcPreferences} = require('../lib/preferences');
 const {ipcMain, BrowserWindow} = require('electron');
 const log = require('electron-log');
 /**
