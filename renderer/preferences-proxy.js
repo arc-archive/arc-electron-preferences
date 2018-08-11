@@ -102,7 +102,7 @@ class ArcPreferencesProxy {
       e.detail.result = Promise.reject(new Error('Name is not set.'));
       return;
     }
-    e.detail.result = this.updateSettings(name, e.detail.value);
+    e.detail.result = this.store(name, e.detail.value);
   }
 
   /**
@@ -112,7 +112,7 @@ class ArcPreferencesProxy {
    * @return {Promise} Promise resolved when the changes has been commited to
    * the file.
    */
-  updateSettings(name, value) {
+  store(name, value) {
     return new Promise((resolve) => {
       this.promises.push({
         type: 'store',

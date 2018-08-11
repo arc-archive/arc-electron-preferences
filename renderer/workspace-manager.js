@@ -96,7 +96,7 @@ class WorkspaceManager extends ArcPreferences {
       return;
     }
     this.__settings = e.detail.value;
-    this.store();
+    this.storeWorkspace();
   }
   /**
    * Restores state file.
@@ -125,7 +125,7 @@ class WorkspaceManager extends ArcPreferences {
    *
    * @param {Object} data Store file contents
    */
-  store() {
+  storeWorkspace() {
     if (!this.initialized) {
       return;
     }
@@ -136,7 +136,7 @@ class WorkspaceManager extends ArcPreferences {
     setTimeout(() => {
       this.__storeDebouncer = false;
       log.info('Storing workspace data to', this.settingsFile);
-      this.updateSettings()
+      this.store()
       .catch((cause) => {
         log.error('Unable to store workspace data.', this.settingsFile, cause);
         console.error(cause);
@@ -160,7 +160,7 @@ class WorkspaceManager extends ArcPreferences {
     return this._processRequests(requests)
     .then((data) => {
       this.__settings.requests = data;
-      this.store();
+      this.storeWorkspace();
     });
   }
   /**
@@ -177,7 +177,7 @@ class WorkspaceManager extends ArcPreferences {
       this.__settings = {};
     }
     this.__settings.selected = selected;
-    this.store();
+    this.storeWorkspace();
   }
   /**
    * Processes requests payloads and transforms them to string if needed.

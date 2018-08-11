@@ -52,7 +52,7 @@ class ArcSessionControl extends ArcPreferences {
     this.__storingDebouncer = true;
     setTimeout(() => {
       this.__storingDebouncer = false;
-      this.updateSettings();
+      this.store();
     }, this.storeDebounce);
   }
 

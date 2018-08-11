@@ -58,7 +58,7 @@ class PreferencesManager extends ArcPreferences {
     }
     p.then(() => {
       this.__settings[name] = value;
-      return this.updateSettings();
+      return this.store();
     })
     .then(() => this._informChange(name, value))
     .catch((cause) => {
