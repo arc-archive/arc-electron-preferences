@@ -22,7 +22,7 @@ class PreferencesManager extends ArcPreferences {
   /**
    * Listens for application events related to preferences management.
    */
-  listen() {
+  observe() {
     ipcMain.on('read-app-preferences', this._readHandler);
     ipcMain.on('update-app-preference', this._changeHandler);
   }
