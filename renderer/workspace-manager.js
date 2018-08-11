@@ -1,4 +1,4 @@
-const {ArcPreferences} = require('../lib/arc-preferences');
+const {ArcPreferences} = require('../lib/preferences');
 const {PayloadProcessor} = require(
   '@advanced-rest-client/arc-electron-payload-processor');
 const log = require('electron-log');
