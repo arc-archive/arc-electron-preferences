@@ -195,3 +195,32 @@ if (e.defaultPrevented) {
   e.detail.result.then((state) => console.log(state));
 }
 ```
+
+
+## Application meta data (main process)
+
+When first run the app creates a meta data file. The file contains
+`appId` which is `uuid` version 4 string and `aid` which is `uuid` version 5.
+
+The `appId` property can be used to identify specific instance of the application.
+This can be used to synchronize data between the instance and any application server.
+
+The `aid` is anonymised application id that only can be used with analytics
+suite. This property cannot be used anywhere else to ensure that any anaytics data
+cannot be connected to specific instance.
+
+### Usage
+
+```
+const {ArcMeta} = require('@advanced-rest-client/arc-electron-preferences/main');
+const meta = new ArcMeta();
+meta.getAppId()
+.then((appId) => {
+  // appId is persistent and can be used to identify the app instance
+});
+
+meta.getAninimizedId()
+.then((aid) => {
+  // aid can be only used to record a user session.
+});
+```
