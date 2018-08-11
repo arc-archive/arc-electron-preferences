@@ -38,6 +38,15 @@ class WorkspaceManager extends ArcPreferences {
      * @type {Number}
      */
     this.storeDebounce = 500;
+    this._readHandler = this._readHandler.bind(this);
+    this._changeHandler = this._changeHandler.bind(this);
+  }
+  /**
+   * Observers window and IPC events which makes this class work.
+   */
+  observe() {
+    window.addEventListener('workspace-state-read', this._readHandler);
+    window.addEventListener('workspace-state-store', this._changeHandler);
   }
   /**
    * Generates the default settings. It is used by the parten class when
@@ -50,6 +59,30 @@ class WorkspaceManager extends ArcPreferences {
       selected: 0,
       environment: 'default'
     });
+  }
+  /**
+   * Handler for web `workspace-state-read` custom event.
+   * @param {CustomEvent} e
+   */
+  _readHandler(e) {
+    if (e.defaultPrevented) {
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    e.detail.result = this.restore();
+  }
+  /**
+   * Handler for web `workspace-state-store` custom event.
+   * @param {CustomEvent} e
+   */
+  _changeHandler(e) {
+    if (e.defaultPrevented) {
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    this.__settings = e.detail.value;
   }
   /**
    * Restores state file.
