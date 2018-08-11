@@ -39,6 +39,7 @@ class PreferencesManager extends ArcPreferences {
     })
     .catch((cause) => {
       log.error(cause);
+      console.error(cause);
       event.sender.send('app-preferences', {}, id);
     });
   }
@@ -62,6 +63,7 @@ class PreferencesManager extends ArcPreferences {
     .then(() => this._informChange(name, value))
     .catch((cause) => {
       log.error(cause);
+      console.error(cause);
       event.sender.send('app-preference-update-error', name, cause.message);
     });
   }
