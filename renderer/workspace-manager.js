@@ -90,6 +90,7 @@ class WorkspaceManager extends ArcPreferences {
     e.preventDefault();
     e.stopPropagation();
     this.__settings = e.detail.value;
+    this.store();
   }
   /**
    * Restores state file.
