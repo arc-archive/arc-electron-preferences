@@ -89,6 +89,12 @@ class WorkspaceManager extends ArcPreferences {
     }
     e.preventDefault();
     e.stopPropagation();
+    if (!e.detail.value) {
+      const message = 'workspace-state-store event has no value';
+      log.warn(message);
+      console.error(message);
+      return;
+    }
     this.__settings = e.detail.value;
     this.store();
   }
@@ -128,10 +134,12 @@ class WorkspaceManager extends ArcPreferences {
     }
     this.__storeDebouncer = true;
     setTimeout(() => {
+      this.__storeDebouncer = false;
       log.info('Storing workspace data to', this.settingsFile);
       this.updateSettings()
       .catch((cause) => {
         log.error('Unable to store workspace data.', this.settingsFile, cause);
+        console.error(cause);
       });
     }, this.storeDebounce);
   }

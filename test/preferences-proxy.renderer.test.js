@@ -18,6 +18,10 @@ describe('ArcPreferencesProxy class - renderer process', function() {
       instance.observe();
     });
 
+    afterEach(() => {
+      instance.unobserve();
+    });
+
     it('Handles the event', function() {
       const e = fire('settings-read', {});
       assert.isTrue(e.defaultPrevented, 'Event is canceled');
@@ -70,6 +74,10 @@ describe('ArcPreferencesProxy class - renderer process', function() {
     beforeEach(() => {
       instance = new ArcPreferencesProxy();
       instance.observe();
+    });
+
+    afterEach(() => {
+      instance.unobserve();
     });
 
     it('Handles the event', function() {
