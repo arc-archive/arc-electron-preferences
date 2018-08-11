@@ -224,3 +224,37 @@ meta.getAninimizedId()
   // aid can be only used to record a user session.
 });
 ```
+
+## Session control (window meta)
+
+The `ArcSessionControl` updates opened application window state to the state file.
+It includes window position and size.
+
+### Example usage
+
+```javascript
+const {ArcSessionControl} = require('@advanced-rest-client/arc-electron-preferences/main');
+const session = new ArcSessionControl(1); // index of the window.
+return session.load()
+.then((state) => {
+  const win = new BrowserWindow({
+    width: state.size.width,
+    height: state.size.height,
+    x: state.position.x,
+    y: state.position.y,
+  });
+  session.trackWindow(win);
+  win.arcSession = session;
+  win.addListener('closed', () => {
+    win.arcSession.untrackWindow();
+  });
+})
+```
+
+The constructor takes window index as an argument. Each window has it's own
+state file that keeps its size and position.
+
+The application can call `updatePosition()` and `updateSize()` function by it's
+own. The class provides the `trackWindow()` function that tracks both `resize`
+and `move` events of the window object. **when using this function** clear
+event listeners when the window is closed or it will newer get garbage collected.
