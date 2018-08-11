@@ -63,6 +63,20 @@ describe('ArcPreferences class - main process', function() {
       });
       assert.equal(instance.settingsFile, data);
     });
+
+    it('Appends filePath to application dir', function() {
+      const app = require('electron').app;
+      const ud = app.getPath('userData');
+      const p = 'added/path';
+      const f = 'file.json';
+      const instance = new ArcPreferences({
+        filePath: p,
+        fileName: f,
+        appendFilePath: true
+      });
+      assert.equal(instance.userSettingsDir, path.join(ud, p));
+      assert.equal(instance.settingsFile, path.join(ud, p, f));
+    });
   });
 
   describe('_resolvePath()', function() {
