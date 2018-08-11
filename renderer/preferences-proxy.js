@@ -102,8 +102,18 @@ class ArcPreferencesProxy {
       e.detail.result = Promise.reject(new Error('Name is not set.'));
       return;
     }
-    e.detail.result = new Promise((resolve) => {
-      const value = e.detail.value;
+    e.detail.result = this.updateSettings(name, e.detail.value);
+  }
+
+  /**
+   * Updates the data and stores it in the settings file.
+   * @param {String} name Property name
+   * @param {?any} value Property value
+   * @return {Promise} Promise resolved when the changes has been commited to
+   * the file.
+   */
+  updateSettings(name, value) {
+    return new Promise((resolve) => {
       this.promises.push({
         type: 'store',
         resolve,
@@ -112,6 +122,7 @@ class ArcPreferencesProxy {
       ipcRenderer.send('update-app-preference', name, value);
     });
   }
+
   /**
    * Handler for `app-preference-updated` main process event.
    * The event is dispatched each time a preference change.
