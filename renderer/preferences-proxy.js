@@ -127,7 +127,7 @@ class ArcPreferencesProxy {
     if (p) {
       p.resolve();
     }
-    document.body.dispatchEvent(new CustomEvent('app-preference-updated', {
+    document.body.dispatchEvent(new CustomEvent('settings-changed', {
       bubbles: true,
       detail: {
         name: name,
