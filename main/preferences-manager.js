@@ -73,6 +73,7 @@ class PreferencesManager extends ArcPreferences {
    * @param {String} value New value
    */
   _informChange(name, value) {
+    this.emit('settings-changed', name, value);
     const windows = BrowserWindow.getAllWindows();
     for (let i = 0, len = windows.length; i < len; i++) {
       windows[i].webContents.send('app-preference-updated', name, value);

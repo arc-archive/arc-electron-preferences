@@ -87,5 +87,21 @@ describe('PreferencesManager class - main process', function() {
         }
       }, name, value);
     });
+
+    it('Notifies the change', (done) => {
+      const instance = new PreferencesManager({
+        file: file
+      });
+      instance.once('settings-changed', (n, v) => {
+        assert.equal(n, name);
+        assert.equal(v, value);
+        done();
+      });
+      instance._changeHandler({
+        sender: {
+          send: function() {}
+        }
+      }, name, value);
+    });
   });
 });
