@@ -1,6 +1,6 @@
 {
   "name": "@advanced-rest-client/arc-electron-preferences",
-  "version": "1.0.0-rc1",
+  "version": "1.0.0-rc2",
   "description": "A package to handle ARC preferences state in both rendered and main process",
   "main": "index.js",
   "scripts": {
