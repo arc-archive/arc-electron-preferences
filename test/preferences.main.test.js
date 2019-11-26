@@ -1,26 +1,26 @@
 const assert = require('chai').assert;
 const path = require('path');
 const fs = require('fs-extra');
-const {ArcPreferences} = require('../');
+const { AppPreferences } = require('../');
 
-describe('ArcPreferences class - main process', function() {
+describe('AppPreferences class - main process', function() {
   const file = path.join('test', 'test.json');
 
   describe('Setting up paths', function() {
     it('Sets default paths', function() {
-      const instance = new ArcPreferences();
+      const instance = new AppPreferences();
       assert.typeOf(instance.userSettingsDir, 'string');
       assert.typeOf(instance.settingsFile, 'string');
     });
 
     it('Default file is settings.json', function() {
-      const instance = new ArcPreferences();
+      const instance = new AppPreferences();
       assert.notEqual(instance.settingsFile.indexOf('settings.json'), -1);
     });
 
     it('Accepts "file" option', function() {
       const data = 'path/to/a/file.json';
-      const instance = new ArcPreferences({
+      const instance = new AppPreferences({
         file: data
       });
       assert.equal(instance.settingsFile, data);
@@ -28,7 +28,7 @@ describe('ArcPreferences class - main process', function() {
 
     it('Accepts "fileName" option', function() {
       const data = 'other-file.json';
-      const instance = new ArcPreferences({
+      const instance = new AppPreferences({
         fileName: data
       });
       assert.notEqual(instance.settingsFile.indexOf(data), -1);
@@ -36,7 +36,7 @@ describe('ArcPreferences class - main process', function() {
 
     it('Accepts "filePath" option', function() {
       const data = 'path/to/a/file/';
-      const instance = new ArcPreferences({
+      const instance = new AppPreferences({
         filePath: data
       });
       assert.equal(instance.settingsFile, data + 'settings.json');
@@ -45,7 +45,7 @@ describe('ArcPreferences class - main process', function() {
     it('Accepts "filePath" and "fileName" option', function() {
       const p = 'path/to/a';
       const f = 'file.json';
-      const instance = new ArcPreferences({
+      const instance = new AppPreferences({
         filePath: p,
         fileName: f
       });
@@ -56,7 +56,7 @@ describe('ArcPreferences class - main process', function() {
       const p = 'path/to/a';
       const f = 'file.json';
       const data = 'path/to/a/file.json';
-      const instance = new ArcPreferences({
+      const instance = new AppPreferences({
         filePath: p,
         fileName: f,
         file: data
@@ -69,7 +69,7 @@ describe('ArcPreferences class - main process', function() {
       const ud = app.getPath('userData');
       const p = 'added/path';
       const f = 'file.json';
-      const instance = new ArcPreferences({
+      const instance = new AppPreferences({
         filePath: p,
         fileName: f,
         appendFilePath: true
@@ -79,10 +79,40 @@ describe('ArcPreferences class - main process', function() {
     });
   });
 
+  describe('setting up defaults', () => {
+    let instance;
+    let info;
+    beforeEach(() => {
+      info = {
+        test: true
+      };
+      instance = new AppPreferences({
+        file
+      }, info);
+    });
+
+    afterEach(async () => await fs.remove(file));
+
+    it('sets "defaults" property', () => {
+      assert.deepEqual(instance.defaults, info);
+    });
+
+    it('loads defaults when loading file', async () => {
+      const result = await instance.load();
+      assert.deepEqual(result, info);
+    });
+
+    it('stores defaults when loading file', async () => {
+      await instance.load();
+      const result = await fs.readJson(file);
+      assert.deepEqual(result, info);
+    });
+  });
+
   describe('_resolvePath()', function() {
     let instance;
     before(() => {
-      instance = new ArcPreferences();
+      instance = new AppPreferences();
     });
 
     it('Resolves ~ as home dir', function() {
@@ -105,24 +135,22 @@ describe('ArcPreferences class - main process', function() {
       return fs.remove(file);
     });
 
-    it('Creates the file', function() {
-      const instance = new ArcPreferences();
-      return instance._restoreFile(file)
-      .then(() => fs.pathExists(file))
-      .then((exists) => assert.isTrue(exists));
+    it('Creates the file', async () => {
+      const instance = new AppPreferences();
+      await instance._restoreFile(file);
+      const exists = await fs.pathExists(file);
+      assert.isTrue(exists);
     });
 
-    it('Reads file content', () => {
+    it('Reads file content', async () => {
       const data = {
         test: true,
         _restoreFile: true
       };
-      const instance = new ArcPreferences();
-      return fs.outputJson(file, data)
-      .then(() => instance._restoreFile(file))
-      .then((content) => {
-        assert.deepEqual(content, data);
-      });
+      const instance = new AppPreferences();
+      await fs.outputJson(file, data);
+      const content = await instance._restoreFile(file);
+      assert.deepEqual(content, data);
     });
   });
 
@@ -136,20 +164,18 @@ describe('ArcPreferences class - main process', function() {
       return fs.remove(file);
     });
 
-    it('Creates the file', function() {
-      const instance = new ArcPreferences();
-      return instance._storeFile(file, data)
-      .then(() => fs.pathExists(file))
-      .then((exists) => assert.isTrue(exists));
+    it('Creates the file', async () => {
+      const instance = new AppPreferences();
+      await instance._storeFile(file, data);
+      const exists = await fs.pathExists(file);
+      assert.isTrue(exists);
     });
 
-    it('Writes to the file', function() {
-      const instance = new ArcPreferences();
-      return instance._storeFile(file, data)
-      .then(() => fs.readJson(file))
-      .then((content) => {
-        assert.deepEqual(content, data);
-      });
+    it('Writes to the file', async () => {
+      const instance = new AppPreferences();
+      await instance._storeFile(file, data);
+      const content = await fs.readJson(file);
+      assert.deepEqual(content, data);
     });
   });
 
@@ -159,77 +185,62 @@ describe('ArcPreferences class - main process', function() {
       load: true
     };
 
-    afterEach(() => {
-      return fs.remove(file);
-    });
+    afterEach(async () => await fs.remove(file));
 
-    it('Returns empty data for non existing file', function() {
-      const instance = new ArcPreferences({
+    it('Returns empty data for non existing file', async () => {
+      const instance = new AppPreferences({
         file
       });
-      return instance.load()
-      .then((content) => {
-        assert.deepEqual(content, {});
-      });
+      const content = await instance.load();
+      assert.deepEqual(content, {});
     });
 
-    it('Returns defaultSettings for non existing file', function() {
-      const instance = new ArcPreferences({
+    it('Returns defaultSettings for non existing file', async () => {
+      const instance = new AppPreferences({
         file
       });
-      instance.defaultSettings = function() {
-        return Promise.resolve(data);
+      instance.defaultSettings = async () => {
+        return data;
       };
-      return instance.load()
-      .then((content) => {
-        assert.deepEqual(content, data);
-      });
+      const content = await instance.load();
+      assert.deepEqual(content, data);
     });
 
-    it('Creates the file with default data', function() {
-      const instance = new ArcPreferences({
+    it('Creates the file with default data', async () => {
+      const instance = new AppPreferences({
         file
       });
-      instance.defaultSettings = function() {
-        return Promise.resolve(data);
+      instance.defaultSettings = async () => {
+        return data;
       };
-      return instance.load()
-      .then(() => fs.readJson(file))
-      .then((content) => {
-        assert.deepEqual(content, data);
-      });
+      await instance.load();
+      const content = await fs.readJson(file);
+      assert.deepEqual(content, data);
     });
 
-    it('Sets up "__settings"', function() {
-      const instance = new ArcPreferences({
+    it('Sets up "__settings"', async () => {
+      const instance = new AppPreferences({
         file
       });
-      instance.defaultSettings = function() {
-        return Promise.resolve(data);
+      instance.defaultSettings = async () => {
+        return data;
       };
-      return instance.load()
-      .then(() => {
-        assert.deepEqual(instance.__settings, data);
-      });
+      await instance.load();
+      assert.deepEqual(instance.__settings, data);
     });
 
-    it('Returns "__settings" when available', function() {
-      const instance = new ArcPreferences({
+    it('Returns "__settings" when available', async () => {
+      const instance = new AppPreferences({
         file
       });
-      instance.defaultSettings = function() {
-        return Promise.resolve(data);
+      instance.defaultSettings = async () => {
+        return data;
       };
-      let settings;
-      return instance.load()
-      .then(() => {
-        settings = instance.__settings;
-        settings.testValue = true;
-        return instance.load();
-      })
-      .then((content) => {
-        assert.deepEqual(content, settings);
-      });
+      await instance.load();
+      const settings = instance.__settings;
+      settings.testValue = true;
+      const content = await instance.load();
+      assert.deepEqual(content, settings);
     });
   });
 });

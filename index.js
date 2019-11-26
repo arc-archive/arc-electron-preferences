@@ -1,1 +1,2 @@
-exports.ArcPreferences = require('./lib/preferences').ArcPreferences;
+require = require('esm')(module);
+module.exports = require('./index-esm.js');

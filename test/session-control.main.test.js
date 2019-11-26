@@ -1,23 +1,23 @@
-const assert = require('chai').assert;
+const { assert } = require('chai');
 const fs = require('fs-extra');
 const path = require('path');
-const {ArcSessionControl} = require('../main');
+const { SessionControl } = require('../main');
 
-describe('ArcSessionControl class - main process', function() {
+describe('SessionControl class - main process', function() {
   describe('Initialization', function() {
     it('Sets "id" property', function() {
-      const instance = new ArcSessionControl(1);
+      const instance = new SessionControl(1);
       assert.equal(instance.id, 1);
     });
 
     it('Sets "settingsFile" path with "sessions" directory', () => {
-      const instance = new ArcSessionControl(0);
+      const instance = new SessionControl(0);
       const compare = path.join('sessions', '0.json');
       assert.notEqual(instance.settingsFile.indexOf(compare), -1);
     });
 
     it('"settingsFile" is in app directory', () => {
-      const instance = new ArcSessionControl(0);
+      const instance = new SessionControl(0);
       const app = require('electron').app;
       const ud = app.getPath('userData');
       const compare = path.join(ud, 'sessions', '0.json');
@@ -28,7 +28,7 @@ describe('ArcSessionControl class - main process', function() {
   describe('_numberValue()', function() {
     let instance;
     before(() => {
-      instance = new ArcSessionControl(0);
+      instance = new SessionControl(0);
     });
 
     it('Accepts numeric value', function() {
@@ -55,21 +55,21 @@ describe('ArcSessionControl class - main process', function() {
   describe('_readAppScreenSize()', function() {
     let instance;
     before(() => {
-      instance = new ArcSessionControl(2);
+      instance = new SessionControl(2);
     });
 
     it('Returns defaults when no argument', function() {
       const result = instance._readAppScreenSize();
       assert.typeOf(result, 'object');
-      assert.equal(result.width, instance._defaultWidth);
-      assert.equal(result.height, instance._defaultHeight);
+      assert.equal(result.width, instance.defaultWidth);
+      assert.equal(result.height, instance.defaultHeight);
     });
 
     it('Returns defaults when argument is missing size', function() {
       const result = instance._readAppScreenSize({});
       assert.typeOf(result, 'object');
-      assert.equal(result.width, instance._defaultWidth);
-      assert.equal(result.height, instance._defaultHeight);
+      assert.equal(result.width, instance.defaultWidth);
+      assert.equal(result.height, instance.defaultHeight);
     });
 
     it('Returns defaults when size is incorrect', function() {
@@ -80,8 +80,8 @@ describe('ArcSessionControl class - main process', function() {
         }
       });
       assert.typeOf(result, 'object');
-      assert.equal(result.width, instance._defaultWidth);
-      assert.equal(result.height, instance._defaultHeight);
+      assert.equal(result.width, instance.defaultWidth);
+      assert.equal(result.height, instance.defaultHeight);
     });
 
     it('Returns 0s for negative values', function() {
@@ -112,7 +112,7 @@ describe('ArcSessionControl class - main process', function() {
   describe('_readAppScreenPosition()', function() {
     let instance;
     before(() => {
-      instance = new ArcSessionControl(2);
+      instance = new SessionControl(2);
     });
 
     it('Returns defaults when no argument', function() {
@@ -169,7 +169,7 @@ describe('ArcSessionControl class - main process', function() {
   describe('Reading data', function() {
     let instance;
     beforeEach(() => {
-      instance = new ArcSessionControl(2);
+      instance = new SessionControl(2);
     });
 
     afterEach(() => {
@@ -183,8 +183,8 @@ describe('ArcSessionControl class - main process', function() {
           const size = data.size;
           const position = data.position;
           assert.typeOf(size, 'object');
-          assert.equal(size.width, instance._defaultWidth);
-          assert.equal(size.height, instance._defaultHeight);
+          assert.equal(size.width, instance.defaultWidth);
+          assert.equal(size.height, instance.defaultHeight);
           assert.typeOf(position, 'object');
           assert.isUndefined(position.x);
           assert.isUndefined(position.y);
@@ -197,7 +197,7 @@ describe('ArcSessionControl class - main process', function() {
   describe('updateSize()', function() {
     let instance;
     beforeEach(() => {
-      instance = new ArcSessionControl(2);
+      instance = new SessionControl(2);
       instance.storeDebounce = 1;
     });
 
@@ -228,7 +228,7 @@ describe('ArcSessionControl class - main process', function() {
   describe('updatePosition()', function() {
     let instance;
     beforeEach(() => {
-      instance = new ArcSessionControl(2);
+      instance = new SessionControl(2);
       instance.storeDebounce = 1;
     });
 

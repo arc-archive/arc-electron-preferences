@@ -1,4 +1,7 @@
-const {ArcPreferences} = require('../lib/preferences');
+import { AppPreferences } from '../lib/AppPreferences.js';
+const defaultWidth = 1200;
+const defaultHeight = 800;
+const debounceTime = 500;
 /**
  * A class responsible for managing browser window state.
  *
@@ -17,30 +20,30 @@ const {ArcPreferences} = require('../lib/preferences');
  * }
  * ```
  */
-class ArcSessionControl extends ArcPreferences {
+export class SessionControl extends AppPreferences {
   /**
-   * @constructor
-   * @param {?Number} windowNumber ID of the window opened for this session.
+   * @param {Number=} windowNumber ID of the window opened for this session.
    * Default to `0`.
+   * @param {Object=} defaults Default values
+   * @param {Number} defaults.width Default window width. Defualts to `1200`.
+   * @param {Number} defaults.height Default window height. Defualts to `800`.
+   * @param {Number} defaults.debounce Store debouncer timeout. Defualts to `500`.
    */
-  constructor(windowNumber) {
-    if (!windowNumber) {
-      windowNumber = 0;
-    }
+  constructor(windowNumber=0, defaults={}) {
     super({
       filePath: 'sessions',
       appendFilePath: true,
       fileName: windowNumber + '.json'
     });
     this.id = windowNumber;
-    this._defaultWidth = 1200;
-    this._defaultHeight = 800;
+    this.defaultWidth = defaults.width || defaultWidth;
+    this.defaultHeight = defaults.height || defaultHeight;
     /**
      * Store data debounce timer.
      * By default it's 500 ms.
      * @type {Number}
      */
-    this.storeDebounce = 500;
+    this.storeDebounce = defaults.debounce || debounceTime;
     /**
      * A reference to a BrowserWindow object that is being tracked.
      * @type {BrowserWindow}
@@ -50,9 +53,8 @@ class ArcSessionControl extends ArcPreferences {
     this._resizedHandler = this._resizedHandler.bind(this);
   }
   /**
-   * Starts tracking a window for move and resize events to call corresponding
-   * save functions.
-   * Note, when the window is distroyed call `untrackWindow` or it will cause
+   * Starts tracking a window. It registers listeners for move and resize events.
+   * Note, when the window is destroyed call `untrackWindow` or it will cause
    * a memory leak.
    * @param {BrowserWindow} win
    */
@@ -66,11 +68,12 @@ class ArcSessionControl extends ArcPreferences {
    * Untracks events from currently tracked window.
    */
   untrackWindow() {
-    if (!this.window) {
+    const { window } = this;
+    if (!window) {
       return;
     }
-    this.window.removeListener('move', this._movedHandler);
-    this.window.removeListener('resize', this._resizedHandler);
+    window.removeListener('move', this._movedHandler);
+    window.removeListener('resize', this._resizedHandler);
     this.window = undefined;
   }
 
@@ -132,12 +135,12 @@ class ArcSessionControl extends ArcPreferences {
    * @param {Object} data Restored data
    * @return {Promise}
    */
-  _processSettings(data) {
+  async _processSettings(data) {
     const result = {
       size: this._readAppScreenSize(data),
       position: this._readAppScreenPosition(data)
     };
-    return Promise.resolve(result);
+    return result;
   }
   /**
    * Reads application screen size from restored data. Setsa defaults
@@ -149,11 +152,11 @@ class ArcSessionControl extends ArcPreferences {
   _readAppScreenSize(data) {
     const result = {};
     if (data && data.size) {
-      result.width = this._numberValue(data.size.width, this._defaultWidth);
-      result.height = this._numberValue(data.size.height, this._defaultHeight);
+      result.width = this._numberValue(data.size.width, this.defaultWidth);
+      result.height = this._numberValue(data.size.height, this.defaultHeight);
     } else {
-      result.width = this._defaultWidth;
-      result.height = this._defaultHeight;
+      result.width = this.defaultWidth;
+      result.height = this.defaultHeight;
     }
     return result;
   }
@@ -165,7 +168,7 @@ class ArcSessionControl extends ArcPreferences {
    * @return {Object} Data to use
    */
   _readAppScreenPosition(data) {
-    let result = {};
+    const result = {};
     if (data && data.position) {
       result.x = this._numberValue(data.position.x);
       result.y = this._numberValue(data.position.y);
@@ -217,4 +220,3 @@ class ArcSessionControl extends ArcPreferences {
     this.updateSize(size[0], size[1]);
   }
 }
-exports.ArcSessionControl = ArcSessionControl;

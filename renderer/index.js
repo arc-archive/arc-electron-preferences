@@ -1,2 +1,2 @@
-exports.ArcPreferencesProxy = require('./preferences-proxy').ArcPreferencesProxy;
-exports.WorkspaceManager = require('./workspace-manager').WorkspaceManager;
+require = require('esm')(module);
+module.exports = require('./index-esm.js');

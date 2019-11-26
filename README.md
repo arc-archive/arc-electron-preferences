@@ -1,35 +1,56 @@
 # arc-electron-preferences
 
-A module to be used in ARC Electron app to support application preferences.
 
-Currently it supports:
+**This library only works with Electron >= 7.0.0**. Electron is required as a peer dependency of this project.
 
--   application settings
--   workspace state
+A module to be used in Electron application to add support for storing preferences.
 
-It contains classes to work in both main and renderer process.
+It is mainly used for Advanced REST Client and API Console projects. However it is made in the most universal way.
+
+It contains classes to work in both main and renderer processes.
+
+## ESM zone
+
+The models are ES modules. If your application does not support ESM then always use `index.js` files located in main package,
+`lib/`, `main/`, and `renderer/` directories.
 
 ## Main process
 
-When the application is initialized, ARC is to initialize `PreferencesManager`
-class from `main/preferences-manager`. It listens for renderer ipc events
-dispatched by `ArcPreferencesProxy` class.
+Application settings storing/restoring/updating is only handled in the main process. Even though it is possible to use `AppPreferences` class in the renderer process,
+to minimize the risk of desynchronizing settings always use `PreferencesManager` in the main process and `PreferencesProxy` in the renderer process.
+If the application, however, has only single window and the main process do not store instance of the `AppPreferences` or `PreferencesManager` in the memory it is safe to read and update file directly from the renderer process.
 
 ```javascript
+import { PreferencesManager } from '@advanced-rest-client/arc-electron-preferences';
 const mgr = new PreferencesManager();
 mgr.observe();
 ```
 
-The class listens for `read-app-preferences` and `update-app-preference`
-events from the renderer process.
+## Renderer process
 
-### Reading settings from renderer using web custom events
+### Working with Preferences manager
+
+Use the proxy to communicate with the main process using channels (not regular IPC events!).
 
 ```javascript
-const {ArcPreferencesProxy} = require('@advanced-rest-client/arc-electron-preferences/renderer');
+import { ArcPreferencesProxy } from '@advanced-rest-client/arc-electron-preferences/renderer';
+
 const proxy = new ArcPreferencesProxy();
 proxy.observe();
+```
 
+#### Direct API
+
+```javascript
+const settings = await proxy.load(); // load current settings
+await proxy.store('name', 'someValue');
+```
+
+#### Web events
+
+##### Reading settings
+
+```javascript
 const e = new CustomEvent('settings-read', {
   bubbles: true,
   composed: true, // assuming custom element
@@ -43,13 +64,9 @@ if (e.defaultPrevented) {
 }
 ```
 
-### Saving settings from renderer using web custom events
+##### Updating settings
 
 ```javascript
-const {ArcPreferencesProxy} = require('@advanced-rest-client/arc-electron-preferences/renderer');
-const proxy = new ArcPreferencesProxy();
-proxy.observe();
-
 const e = new CustomEvent('settings-changed', {
   bubbles: true,
   composed: true, // assuming custom element
@@ -67,192 +84,64 @@ if (e.defaultPrevented) {
 ```
 
 When settings are updates every browser window receives `app-preference-updated`
-event from the main page on the ipc main bus and the proxy dispatches non cancelable
+event from the main page on the ipc main bus and the proxy dispatches non cancellable
 `settings-changed` custom event. Therefore once the proxy is initialized the
 components / application should just listen to this event to know if a setting
 changed.
 
-## Renderer process
-
-### Preferences read and save
-
-By design there's no direct class to manipulate the settings file. The app works
-with single settings file and there can be more than one window opened.
-To ensure that each window has the same set of settings all storing / restoring
-logic is in main process in `PreferencesManager` class.
-
-Renderer process must use `ArcPreferencesProxy` class to communicate with main
-process to operate on the data.
-
-Preferred way to handle settings is by using custom events.
-
-First initialize the proxy somewhere in the application logic.
-```javascript
-const {ArcPreferencesProxy} = require('@advanced-rest-client/arc-electron-preferences/renderer');
-const proxy = new ArcPreferencesProxy();
-proxy.observe();
-```
-
-Once the proxy observers for custom events it's ready to use event's API:
-
-```javascript
-const e = new CustomEvent('settings-read', {
-  bubbles: true,
-  composed: true, // assuming custom element
-  cancelable: true,
-  detail: {} // must be set!
-});
-this.dispatchEvent(e); // assuming custom element
-
-if (e.defaultPrevented) {
-  e.detail.result.then((settings) => console.log(settings));
-}
-```
-
-Or to update settings:
-
-```javascript
-const e = new CustomEvent('settings-changed', {
-  bubbles: true,
-  composed: true, // assuming custom element
-  cancelable: true,
-  detail: {
-    name: 'my-setting',
-    value: 'my-value'
-  }
-});
-this.dispatchEvent(e); // assuming custom element
-
-if (e.defaultPrevented) {
-  e.detail.result.then((settings) => console.log('Settings saved'));
-}
-```
-
-Because all windows are notified about the change the app should listen for
-`settings-changed` custom event. If the event is non-cancelable it means that
-the change has been saved to the file.
-
-```
-window.addEventListener('settings-changed', (e) => {
-  if (e.cancelable) {
-    // This is request for change. It still can be canceled for any reason.
-    return;
-  }
-  console.log('Setting changed', e.detail.name, e.detail.value);
-});
-```
-
-### Workspace state
-
-This module also support workspace state. It allows to read and update a state
-of specific window.
-
-```javascript
-const {WorkspaceManager} = require('@advanced-rest-client/arc-electron-preferences/renderer');
-const manager = new WorkspaceManager(0);
-manager.observe();
-```
-
-The first argument tells which state to restore. It is an index of the window
-being opened. By default it's `0`. The application should inform created window
-about its index so it restores appropriate state. For better experience each window
-should support it's own state.
-
-#### Reading workspace state
-
-```javascript
-const e = new CustomEvent('workspace-state-read', {
-  bubbles: true,
-  composed: true, // assuming custom element
-  cancelable: true,
-  detail: {} // must be set!
-});
-this.dispatchEvent(e); // assuming custom element
-if (e.defaultPrevented) {
-  e.detail.result.then((state) => console.log(state));
-}
-```
-
-If the state file does not exist it returns default values.
-
-#### Updating workspace state
-
-```javascript
-const e = new CustomEvent('workspace-state-store', {
-  bubbles: true,
-  composed: true, // assuming custom element
-  cancelable: true,
-  detail: {
-    value: {
-      selected: 1,
-      requests: [{}],
-      environmetn: 0
-    }
-  }
-});
-this.dispatchEvent(e); // assuming custom element
-if (e.defaultPrevented) {
-  e.detail.result.then((state) => console.log(state));
-}
-```
-
-
 ## Application meta data (main process)
 
-When first run the app creates a meta data file. The file contains
-`appId` which is `uuid` version 4 string and `aid` which is `uuid` version 5.
+When first run the app creates a meta data file. The file contains `appId` which is an `uuid` version 4 string and `aid` which is `uuid` version 5.
 
 The `appId` property can be used to identify specific instance of the application.
-This can be used to synchronize data between the instance and any application server.
+This can be used to synchronize data between the instance and the application server.
 
-The `aid` is anonymised application id that only can be used with analytics
-suite. This property cannot be used anywhere else to ensure that any anaytics data
-cannot be connected to specific instance.
+The `aid` is anonymised application id that should be used with analytics suite.
+This property cannot be used anywhere else to ensure that any analytics data cannot be connected to specific instance.
 
 ### Usage
 
-```
-const {ArcMeta} = require('@advanced-rest-client/arc-electron-preferences/main');
-const meta = new ArcMeta();
-meta.getAppId()
-.then((appId) => {
-  // appId is persistent and can be used to identify the app instance
-});
+```javascript
+import { AppMeta } from '@advanced-rest-client/arc-electron-preferences';
 
-meta.getAninimizedId()
-.then((aid) => {
-  // aid can be only used to record a user session.
-});
+const meta = new AppMeta();
+// appId is persistent and can be used to identify the app instance
+const appId = await meta.getAppId();
+// aid can be only used to record a user session.
+const aid = await meta.getAninimizedId();
 ```
 
 ## Session control (window meta)
 
-The `ArcSessionControl` updates opened application window state to the state file.
+The `SessionControl` updates application's window state to the state file.
 It includes window position and size.
 
 ### Example usage
 
 ```javascript
-const {ArcSessionControl} = require('@advanced-rest-client/arc-electron-preferences/main');
-const session = new ArcSessionControl(1); // index of the window.
-return session.load()
-.then((state) => {
-  const win = new BrowserWindow({
-    width: state.size.width,
-    height: state.size.height,
-    x: state.position.x,
-    y: state.position.y,
-  });
-  session.trackWindow(win);
-  win.arcSession = session;
-  win.addListener('closed', () => {
-    win.arcSession.untrackWindow();
-  });
-})
+import { SessionControl } from '@advanced-rest-client/arc-electron-preferences';
+
+// The argument is the index of the window.
+const session = new SessionControl(1);
+const state = await session.load();
+const win = new BrowserWindow({
+  width: state.size.width,
+  height: state.size.height,
+  x: state.position.x,
+  y: state.position.y,
+});
+session.trackWindow(win);
+win.metaSession = session;
+win.addListener('closed', () => {
+  win.metaSession.untrackWindow();
+});
 ```
 
 The constructor takes window index as an argument. Each window has it's own
 state file that keeps its size and position.
+
+The second optional argument is a map of default values for window `width` and `height`
+and `debounce` to store the state after this amount of ms.
 
 The application can call `updatePosition()` and `updateSize()` function by it's
 own. The class provides the `trackWindow()` function that tracks both `resize`
